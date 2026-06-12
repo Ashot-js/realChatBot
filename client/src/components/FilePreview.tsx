@@ -18,6 +18,15 @@ export default function FilePreview({ url, type, fileName }: Props) {
     );
   }
 
+  if (type === 'audio') {
+    return (
+      <div className="flex items-center gap-2 px-3 py-2 bg-violet-500/10 border border-violet-500/20 rounded-xl">
+        <span className="text-lg">🎙️</span>
+        <audio controls src={url} className="h-8 w-48" />
+      </div>
+    );
+  }
+
   return (
     <a
       href={url}
