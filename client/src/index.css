@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Base ──────────────────────────────────────────────── */
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #0f1729;
+  color: #ffffff;
+}
+
+/* ─── Scrollbar ─────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #243b67;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2d4f8a;
+}
+
+/* ─── Chat input ────────────────────────────────────────── */
+.chat-input {
+  background: #1a2744;
+  border: 1px solid #243b67;
+  color: white;
+  border-radius: 12px;
+  padding: 12px 16px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.chat-input:focus {
+  border-color: #3b82f6;
+}
+.chat-input::placeholder {
+  color: #64748b;
+}
+
+/* ─── Messages ──────────────────────────────────────────── */
+.message-bubble-mine {
+  background: #3b82f6;
+  border-radius: 16px 16px 4px 16px;
+}
+.message-bubble-other {
+  background: #1a2744;
+  border-radius: 16px 16px 16px 4px;
+}
+
+/* ─── Typing dots animation ─────────────────────────────── */
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-6px); }
+}
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  background: #94a3b8;
+  border-radius: 50%;
+  display: inline-block;
+  animation: typingBounce 1.4s infinite ease-in-out;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* ─── Online dot ────────────────────────────────────────── */
+.online-dot {
+  width: 10px;
+  height: 10px;
+  background: #22c55e;
+  border-radius: 50%;
+  border: 2px solid #0f1729;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+
+/* ─── File preview ──────────────────────────────────────── */
+.file-preview-img {
+  max-width: 240px;
+  max-height: 240px;
+  border-radius: 8px;
+  cursor: pointer;
+}
