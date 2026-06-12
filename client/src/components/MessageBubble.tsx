@@ -87,13 +87,22 @@ function AudioPlayer({ url, isMine }: { url: string; isMine: boolean }) {
   const fullUrl = url.startsWith('/') ? `${BACKEND}${url}` : url;
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
+  const [error, setError] = useState(false);
 
   function togglePlay() {
     const audio = audioRef.current;
     if (!audio) return;
+    setError(false);
+
     if (audio.paused) {
-      audio.play();
-      setPlaying(true);
+      audio.currentTime = 0;
+      audio.load();
+      audio.play()
+        .then(() => setPlaying(true))
+        .catch(() => {
+          setError(true);
+          setPlaying(false);
+        });
     } else {
       audio.pause();
       setPlaying(false);
@@ -108,7 +117,7 @@ function AudioPlayer({ url, isMine }: { url: string; isMine: boolean }) {
           : 'bg-surface-light border border-surface-lighter rounded-2xl rounded-bl-md'
       }`}
     >
-      <audio ref={audioRef} src={fullUrl} preload="metadata" onEnded={() => setPlaying(false)} />
+      <audio ref={audioRef} src={fullUrl} preload="auto" onEnded={() => setPlaying(false)} />
 
       <button
         onClick={togglePlay}
@@ -118,7 +127,9 @@ function AudioPlayer({ url, isMine }: { url: string; isMine: boolean }) {
             : 'bg-violet-500/20 hover:bg-violet-500/30 text-violet-400'
         }`}
       >
-        {playing ? (
+        {error ? (
+          <span className="text-sm">⚠️</span>
+        ) : playing ? (
           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
             <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
           </svg>
@@ -129,7 +140,7 @@ function AudioPlayer({ url, isMine }: { url: string; isMine: boolean }) {
         )}
       </button>
 
-      <div className="audio-wave paused flex-1">
+      <div className={`audio-wave flex-1 ${playing ? 'playing' : 'paused'}`}>
         {Array.from({ length: 12 }).map((_, i) => (
           <div
             key={i}
