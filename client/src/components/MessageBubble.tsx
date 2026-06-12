@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Message } from '../types';
 import FilePreview from './FilePreview';
@@ -84,6 +85,21 @@ const BACKEND = import.meta.env.VITE_SOCKET_URL || '';
 
 function AudioPlayer({ url, isMine }: { url: string; isMine: boolean }) {
   const fullUrl = url.startsWith('/') ? `${BACKEND}${url}` : url;
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [playing, setPlaying] = useState(false);
+
+  function togglePlay() {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (audio.paused) {
+      audio.play();
+      setPlaying(true);
+    } else {
+      audio.pause();
+      setPlaying(false);
+    }
+  }
+
   return (
     <div
       className={`flex items-center gap-3 px-3 py-2.5 mb-1 ${
@@ -92,42 +108,37 @@ function AudioPlayer({ url, isMine }: { url: string; isMine: boolean }) {
           : 'bg-surface-light border border-surface-lighter rounded-2xl rounded-bl-md'
       }`}
     >
-      <audio src={fullUrl} preload="metadata" className="hidden" id={`audio-${url}`} />
+      <audio ref={audioRef} src={fullUrl} preload="metadata" onEnded={() => setPlaying(false)} />
 
-      {/* Play/Pause */}
       <button
-        onClick={() => {
-          const audio = document.getElementById(`audio-${url}`) as HTMLAudioElement;
-          if (audio) {
-            audio.paused ? audio.play() : audio.pause();
-          }
-        }}
+        onClick={togglePlay}
         className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all ${
           isMine
             ? 'bg-white/20 hover:bg-white/30 text-white'
             : 'bg-violet-500/20 hover:bg-violet-500/30 text-violet-400'
         }`}
       >
-        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M8 5v14l11-7z" />
-        </svg>
+        {playing ? (
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+          </svg>
+        ) : (
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+        )}
       </button>
 
-      {/* Waveform bars */}
       <div className="audio-wave paused flex-1">
         {Array.from({ length: 12 }).map((_, i) => (
           <div
             key={i}
             className="audio-wave-bar"
-            style={{
-              height: `${6 + Math.sin(i * 0.8) * 8}px`,
-              background: isMine ? 'rgba(255,255,255,0.7)' : '#a78bfa',
-            }}
+            style={{ height: `${6 + Math.sin(i * 0.8) * 8}px`, background: isMine ? 'rgba(255,255,255,0.7)' : '#a78bfa' }}
           />
         ))}
       </div>
 
-      {/* Duration */}
       <span className={`text-xs shrink-0 ${isMine ? 'text-white/70' : 'text-slate-400'}`}>
         0:00
       </span>
