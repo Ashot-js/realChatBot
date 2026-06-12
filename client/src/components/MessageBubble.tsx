@@ -80,7 +80,10 @@ export default function MessageBubble({ message }: Props) {
 }
 
 /* ─── Inline Audio Player ─────────────────────────────── */
+const BACKEND = import.meta.env.VITE_SOCKET_URL || '';
+
 function AudioPlayer({ url, isMine }: { url: string; isMine: boolean }) {
+  const fullUrl = url.startsWith('/') ? `${BACKEND}${url}` : url;
   return (
     <div
       className={`flex items-center gap-3 px-3 py-2.5 mb-1 ${
@@ -89,7 +92,7 @@ function AudioPlayer({ url, isMine }: { url: string; isMine: boolean }) {
           : 'bg-surface-light border border-surface-lighter rounded-2xl rounded-bl-md'
       }`}
     >
-      <audio src={url} preload="metadata" className="hidden" id={`audio-${url}`} />
+      <audio src={fullUrl} preload="metadata" className="hidden" id={`audio-${url}`} />
 
       {/* Play/Pause */}
       <button

@@ -1,3 +1,5 @@
+const BACKEND = import.meta.env.VITE_SOCKET_URL || '';
+
 interface Props {
   url: string;
   type: string;
@@ -5,11 +7,12 @@ interface Props {
 }
 
 export default function FilePreview({ url, type, fileName }: Props) {
+  const fullUrl = url.startsWith('/') ? `${BACKEND}${url}` : url;
   if (type === 'image') {
     return (
-      <a href={url} target="_blank" rel="noopener noreferrer">
+      <a href={fullUrl} target="_blank" rel="noopener noreferrer">
         <img
-          src={url}
+          src={fullUrl}
           alt={fileName || 'Image'}
           className="file-preview-img"
           loading="lazy"
@@ -22,14 +25,14 @@ export default function FilePreview({ url, type, fileName }: Props) {
     return (
       <div className="flex items-center gap-2 px-3 py-2 bg-violet-500/10 border border-violet-500/20 rounded-xl">
         <span className="text-lg">🎙️</span>
-        <audio controls src={url} className="h-8 w-48" />
+        <audio controls src={fullUrl} className="h-8 w-48" />
       </div>
     );
   }
 
   return (
     <a
-      href={url}
+      href={fullUrl}
       target="_blank"
       rel="noopener noreferrer"
       className="flex items-center gap-2 px-3 py-2 bg-surface-light border border-surface-lighter rounded-xl text-sm text-violet-400 hover:text-violet-300 transition-colors"
