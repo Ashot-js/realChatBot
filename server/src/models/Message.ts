@@ -31,7 +31,7 @@ const messageSchema = new Schema<IMessage>(
     },
     type: {
       type: String,
-      enum: ['text', 'image', 'file', 'system'],
+      enum: ['text', 'image', 'file', 'audio', 'system'],
       default: 'text',
     },
     fileUrl: String,
