@@ -15,13 +15,13 @@ export default function TypingIndicator({ usernames }: Props) {
   }
 
   return (
-    <div className="flex items-center gap-2 text-xs text-slate-400">
+    <div className="flex items-center gap-2 text-xs">
       <div className="flex gap-1">
         <span className="typing-dot" />
         <span className="typing-dot" />
         <span className="typing-dot" />
       </div>
-      <span>{text}</span>
+      <span className="text-violet-300">{text}</span>
     </div>
   );
 }

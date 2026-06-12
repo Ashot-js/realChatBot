@@ -12,7 +12,7 @@ export interface Message {
   chat: string;
   sender: User;
   content: string;
-  type: 'text' | 'image' | 'file' | 'system';
+  type: 'text' | 'image' | 'file' | 'audio' | 'system';
   fileUrl?: string;
   fileName?: string;
   fileSize?: number;

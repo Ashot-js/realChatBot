@@ -36,7 +36,7 @@ export default function EmojiPicker({ onSelect, onClose }: Props) {
   return (
     <div
       ref={ref}
-      className="bg-navy-800 border border-navy-700 rounded-xl p-3 w-64 shadow-xl"
+      className="glass-strong rounded-2xl p-3 w-64 shadow-2xl shadow-violet-500/10"
     >
       <div className="grid grid-cols-8 gap-1">
         {EMOJI_LIST.map((emoji, i) => (
@@ -44,7 +44,7 @@ export default function EmojiPicker({ onSelect, onClose }: Props) {
             key={i}
             type="button"
             onClick={() => onSelect(emoji)}
-            className="text-lg hover:bg-navy-700 rounded p-1 transition-colors"
+            className="text-lg hover:bg-surface-lighter rounded-lg p-1 transition-colors"
           >
             {emoji}
           </button>

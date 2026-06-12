@@ -58,4 +58,27 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response): Prom
   }
 });
 
+// PATCH /api/users/avatar — update user avatar
+router.patch('/avatar', authMiddleware, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { avatar } = req.body;
+    if (!avatar) {
+      res.status(400).json({ error: 'avatar URL is required' });
+      return;
+    }
+    const user = await User.findByIdAndUpdate(
+      req.userId,
+      { avatar },
+      { new: true }
+    ).select('username avatar isOnline lastSeen');
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+    res.json({ user });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;

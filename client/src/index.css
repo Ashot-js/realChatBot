@@ -2,60 +2,105 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Base ──────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   BASE
+   ═══════════════════════════════════════════════════════════ */
 body {
   margin: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #0f1729;
-  color: #ffffff;
+  background: #0b0b1a;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% -20%, rgba(124, 58, 237, 0.12), transparent),
+    radial-gradient(ellipse 60% 50% at 100% 100%, rgba(6, 182, 212, 0.06), transparent);
+  color: #f1f5f9;
+  min-height: 100vh;
 }
 
-/* ─── Scrollbar ─────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   CUSTOM SCROLLBAR
+   ═══════════════════════════════════════════════════════════ */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #243b67;
-  border-radius: 3px;
+  background: linear-gradient(180deg, #7c3aed44, #06b6d444);
+  border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #2d4f8a;
+  background: linear-gradient(180deg, #7c3aed88, #06b6d488);
 }
 
-/* ─── Chat input ────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   GLASSMORPHISM UTILITY
+   ═══════════════════════════════════════════════════════════ */
+.glass {
+  background: rgba(21, 21, 48, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(124, 58, 237, 0.12);
+}
+
+.glass-strong {
+  background: rgba(21, 21, 48, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(124, 58, 237, 0.18);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GRADIENT TEXT
+   ═══════════════════════════════════════════════════════════ */
+.gradient-text {
+  background: linear-gradient(135deg, #a78bfa, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CHAT INPUT
+   ═══════════════════════════════════════════════════════════ */
 .chat-input {
-  background: #1a2744;
-  border: 1px solid #243b67;
-  color: white;
-  border-radius: 12px;
+  background: #151530;
+  border: 1px solid #222250;
+  color: #f1f5f9;
+  border-radius: 14px;
   padding: 12px 16px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.25s, box-shadow 0.25s;
+  font-size: 0.9375rem;
 }
 .chat-input:focus {
-  border-color: #3b82f6;
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
 }
 .chat-input::placeholder {
   color: #64748b;
 }
 
-/* ─── Messages ──────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   MESSAGE BUBBLES
+   ═══════════════════════════════════════════════════════════ */
 .message-bubble-mine {
-  background: #3b82f6;
-  border-radius: 16px 16px 4px 16px;
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  border-radius: 18px 18px 4px 18px;
+  box-shadow: 0 2px 12px rgba(124, 58, 237, 0.25);
 }
 .message-bubble-other {
-  background: #1a2744;
-  border-radius: 16px 16px 16px 4px;
+  background: #1a1a3e;
+  border-radius: 18px 18px 18px 4px;
+  border: 1px solid rgba(124, 58, 237, 0.1);
 }
 
-/* ─── Typing dots animation ─────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   TYPING DOTS
+   ═══════════════════════════════════════════════════════════ */
 @keyframes typingBounce {
   0%, 60%, 100% { transform: translateY(0); }
   30% { transform: translateY(-6px); }
@@ -63,7 +108,7 @@ body {
 .typing-dot {
   width: 6px;
   height: 6px;
-  background: #94a3b8;
+  background: #a78bfa;
   border-radius: 50%;
   display: inline-block;
   animation: typingBounce 1.4s infinite ease-in-out;
@@ -71,22 +116,156 @@ body {
 .typing-dot:nth-child(2) { animation-delay: 0.2s; }
 .typing-dot:nth-child(3) { animation-delay: 0.4s; }
 
-/* ─── Online dot ────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   ONLINE DOT
+   ═══════════════════════════════════════════════════════════ */
 .online-dot {
   width: 10px;
   height: 10px;
-  background: #22c55e;
+  background: #10b981;
   border-radius: 50%;
-  border: 2px solid #0f1729;
+  border: 2px solid #0b0b1a;
   position: absolute;
   bottom: 0;
   right: 0;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
 }
 
-/* ─── File preview ──────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   FILE PREVIEW
+   ═══════════════════════════════════════════════════════════ */
 .file-preview-img {
   max-width: 240px;
   max-height: 240px;
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
+  border: 1px solid rgba(124, 58, 237, 0.15);
+  transition: transform 0.2s;
+}
+.file-preview-img:hover {
+  transform: scale(1.02);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   VOICE RECORDER
+   ═══════════════════════════════════════════════════════════ */
+.voice-recorder-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #151530;
+  border: 1px solid #222250;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+.voice-recorder-btn:hover {
+  color: #a78bfa;
+  border-color: #7c3aed;
+}
+.voice-recorder-btn.recording {
+  background: #7c3aed;
+  border-color: #7c3aed;
+  color: #fff;
+  animation: pulse-ring 1.5s ease-out infinite;
+}
+
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.6); }
+  70% { box-shadow: 0 0 0 14px rgba(124, 58, 237, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0); }
+}
+
+.voice-cancel-zone {
+  background: rgba(239, 68, 68, 0.15);
+  border: 2px dashed rgba(239, 68, 68, 0.5);
+  border-radius: 20px;
+  padding: 12px 24px;
+  color: #ef4444;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+.voice-cancel-zone.active {
+  background: rgba(239, 68, 68, 0.3);
+  border-color: #ef4444;
+  transform: scale(1.05);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   AUDIO PLAYER WAVEFORM
+   ═══════════════════════════════════════════════════════════ */
+.audio-wave {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 24px;
+}
+.audio-wave-bar {
+  width: 3px;
+  border-radius: 2px;
+  background: #a78bfa;
+  animation: wave 0.8s ease-in-out infinite;
+}
+.audio-wave-bar:nth-child(2)  { animation-delay: 0.1s; }
+.audio-wave-bar:nth-child(3)  { animation-delay: 0.2s; }
+.audio-wave-bar:nth-child(4)  { animation-delay: 0.3s; }
+.audio-wave-bar:nth-child(5)  { animation-delay: 0.4s; }
+.audio-wave-bar:nth-child(6)  { animation-delay: 0.5s; }
+.audio-wave-bar:nth-child(7)  { animation-delay: 0.6s; }
+.audio-wave-bar:nth-child(8)  { animation-delay: 0.7s; }
+.audio-wave-bar:nth-child(9)  { animation-delay: 0.15s; }
+.audio-wave-bar:nth-child(10) { animation-delay: 0.25s; }
+.audio-wave-bar:nth-child(11) { animation-delay: 0.35s; }
+.audio-wave-bar:nth-child(12) { animation-delay: 0.45s; }
+
+.audio-wave.playing .audio-wave-bar {
+  animation-play-state: running;
+}
+.audio-wave.paused .audio-wave-bar {
+  animation-play-state: paused;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SHIMMER LOADING
+   ═══════════════════════════════════════════════════════════ */
+.shimmer {
+  background: linear-gradient(90deg, #151530 25%, #1a1a3e 50%, #151530 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   NEW-MESSAGE ANIMATION
+   ═══════════════════════════════════════════════════════════ */
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   INPUT RANGE (audio seek)
+   ═══════════════════════════════════════════════════════════ */
+input[type='range'].audio-seek {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 4px;
+  background: #222250;
+  outline: none;
+}
+input[type='range'].audio-seek::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #a78bfa;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+input[type='range'].audio-seek::-webkit-slider-thumb:hover {
+  transform: scale(1.3);
 }

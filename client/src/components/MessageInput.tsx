@@ -1,8 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useSocket } from '../context/SocketContext';
 import { useChatContext } from '../context/ChatContext';
 import { uploadApi } from '../services/api';
 import EmojiPicker from './EmojiPicker';
+import VoiceRecorder from './VoiceRecorder';
 
 export default function MessageInput() {
   const { socket } = useSocket();
@@ -14,12 +15,15 @@ export default function MessageInput() {
   const typingTimeout = useRef<ReturnType<typeof setTimeout>>();
 
   // Emit typing events
-  function emitTyping(isTyping: boolean) {
-    if (!activeChat || !socket) return;
-    socket.emit(isTyping ? 'typing:start' : 'typing:stop', {
-      chatId: activeChat._id,
-    });
-  }
+  const emitTyping = useCallback(
+    (isTyping: boolean) => {
+      if (!activeChat || !socket) return;
+      socket.emit(isTyping ? 'typing:start' : 'typing:stop', {
+        chatId: activeChat._id,
+      });
+    },
+    [activeChat, socket]
+  );
 
   function handleTextChange(value: string) {
     setText(value);
@@ -42,7 +46,7 @@ export default function MessageInput() {
         emitTyping(false);
       }
     };
-  }, []);
+  }, [emitTyping]);
 
   function sendMessage(e?: React.FormEvent) {
     e?.preventDefault();
@@ -51,7 +55,6 @@ export default function MessageInput() {
       return;
     }
 
-    console.log('[MessageInput] Sending message:', { chatId: activeChat._id, content: text.trim() });
     socket.emit('message:send', {
       chatId: activeChat._id,
       content: text.trim(),
@@ -98,19 +101,41 @@ export default function MessageInput() {
     }
   }
 
+  function handleVoiceSend(audioBlob: Blob) {
+    if (!activeChat || !socket) return;
+
+    // Convert blob to file and upload
+    const file = new File([audioBlob], `voice-${Date.now()}.webm`, { type: 'audio/webm' });
+    setUploading(true);
+    uploadApi
+      .upload(file)
+      .then(({ data }) => {
+        socket.emit('message:send', {
+          chatId: activeChat._id,
+          content: '',
+          type: 'audio',
+          fileUrl: data.url,
+          fileName: 'Voice message',
+          fileSize: data.fileSize,
+        });
+      })
+      .catch((err) => console.error('Voice upload failed:', err))
+      .finally(() => setUploading(false));
+  }
+
   if (!activeChat) return null;
 
   return (
     <form
       onSubmit={sendMessage}
-      className="p-3 border-t border-navy-700 bg-navy-800 flex items-end gap-2"
+      className="p-3 border-t border-surface-lighter glass-strong flex items-end gap-1.5"
     >
       {/* Emoji button */}
       <div className="relative">
         <button
           type="button"
           onClick={() => setShowEmoji(!showEmoji)}
-          className="text-slate-400 hover:text-yellow-400 transition-colors p-1"
+          className="text-slate-400 hover:text-yellow-400 transition-colors p-1.5"
         >
           😊
         </button>
@@ -122,9 +147,9 @@ export default function MessageInput() {
       </div>
 
       {/* File upload */}
-      <label className="text-slate-400 hover:text-blue-400 transition-colors p-1 cursor-pointer">
+      <label className="text-slate-400 hover:text-violet-400 transition-colors p-1.5 cursor-pointer">
         {uploading ? (
-          <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-4 h-4 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
         ) : (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -143,6 +168,9 @@ export default function MessageInput() {
         />
       </label>
 
+      {/* Voice recorder */}
+      <VoiceRecorder onSend={handleVoiceSend} />
+
       {/* Text input */}
       <input
         ref={inputRef}
@@ -157,7 +185,7 @@ export default function MessageInput() {
       <button
         type="submit"
         disabled={!text.trim()}
-        className="bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white p-2 rounded-lg transition-colors"
+        className="bg-gradient-to-r from-violet-600 to-violet-700 hover:from-violet-500 hover:to-violet-600 disabled:opacity-30 disabled:cursor-not-allowed text-white p-2.5 rounded-xl transition-all shadow-lg shadow-violet-500/20"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path

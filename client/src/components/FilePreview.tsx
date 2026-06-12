@@ -23,7 +23,7 @@ export default function FilePreview({ url, type, fileName }: Props) {
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center gap-2 px-3 py-2 bg-navy-700 rounded-lg text-sm text-blue-400 hover:text-blue-300 transition-colors"
+      className="flex items-center gap-2 px-3 py-2 bg-surface-light border border-surface-lighter rounded-xl text-sm text-violet-400 hover:text-violet-300 transition-colors"
     >
       <span>📎</span>
       <span className="truncate max-w-[200px]">{fileName || 'File'}</span>

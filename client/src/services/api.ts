@@ -32,6 +32,7 @@ export const usersApi = {
   search: (q: string) => api.get(`/users/search?q=${encodeURIComponent(q)}`),
   online: () => api.get('/users/online'),
   getById: (id: string) => api.get(`/users/${id}`),
+  updateAvatar: (avatar: string) => api.patch('/users/avatar', { avatar }),
 };
 
 // ─── Chats ───────────────────────────────────────────────
