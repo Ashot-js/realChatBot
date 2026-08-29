@@ -7,7 +7,7 @@ const API_BASE = import.meta.env.VITE_SOCKET_URL
 const api = axios.create({
   baseURL: API_BASE,
   headers: { 'Content-Type': 'application/json' },
-  timeout: 10000,
+  timeout: 3000,
 });
 
 // Attach token
