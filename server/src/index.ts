@@ -37,6 +37,17 @@ async function main(): Promise<void> {
   app.use('/api/messages', messageRoutes);
   app.use('/api/upload', uploadRoutes);
 
+  // Root — friendly info so the backend URL isn't a blank 404 in a browser
+  app.get('/', (_req, res) => {
+    res.json({
+      service: 'RealChatBot API',
+      status: 'running',
+      endpoints: ['/api/auth', '/api/users', '/api/chats', '/api/messages', '/api/upload', '/api/health'],
+      chatApp: 'https://realchatbot-app.web.app',
+      timestamp: new Date().toISOString(),
+    });
+  });
+
   // Health check
   app.get('/api/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
