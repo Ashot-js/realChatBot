@@ -26,7 +26,6 @@ export default function Login() {
 
   return (
     <div className="auth-page">
-      <div className="auth-bg-grid" aria-hidden="true" />
       <div className="auth-orb auth-orb--1" aria-hidden="true" />
       <div className="auth-orb auth-orb--2" aria-hidden="true" />
       <div className="auth-orb auth-orb--3" aria-hidden="true" />

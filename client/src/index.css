@@ -276,6 +276,7 @@ input[type='range'].audio-seek::-webkit-slider-thumb:hover {
 .auth-page {
   position: relative;
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -287,20 +288,8 @@ input[type='range'].audio-seek::-webkit-slider-thumb:hover {
   perspective: 1200px;
 }
 
-.auth-bg-grid {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-  background-size: 44px 44px;
-  -webkit-mask-image: radial-gradient(ellipse at 50% 40%, black 20%, transparent 75%);
-  mask-image: radial-gradient(ellipse at 50% 40%, black 20%, transparent 75%);
-}
-
 .auth-orb {
-  position: absolute;
+  position: fixed;
   border-radius: 50%;
   filter: blur(100px);
   opacity: 0.5;
@@ -403,7 +392,7 @@ input[type='range'].audio-seek::-webkit-slider-thumb:hover {
   position: relative;
   width: 66px;
   height: 66px;
-  border-radius: 20px;
+  border-radius: 50%;
   background: linear-gradient(135deg, #7c3aed, #06b6d4);
   display: flex;
   align-items: center;
@@ -692,6 +681,7 @@ input[type='range'].audio-seek::-webkit-slider-thumb:hover {
 .chat-shell {
   position: relative;
   height: 100vh;
+  height: 100dvh;
   display: flex;
   overflow: hidden;
   background: linear-gradient(135deg, #0b0b1a 0%, #140f2e 45%, #0a1626 100%);
@@ -699,20 +689,20 @@ input[type='range'].audio-seek::-webkit-slider-thumb:hover {
   animation: authBgShift 16s ease-in-out infinite;
 }
 
-.chat-bg-grid {
+/* Мягкая аурора вместо сетки — только круглые формы */
+.chat-shell::before {
+  content: '';
   position: absolute;
   inset: 0;
   z-index: 0;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 44px 44px;
-  -webkit-mask-image: radial-gradient(ellipse at 50% 40%, black 20%, transparent 75%);
-  mask-image: radial-gradient(ellipse at 50% 40%, black 20%, transparent 75%);
+  background:
+    radial-gradient(ellipse 55% 45% at 12% 8%, rgba(139, 92, 246, 0.16), transparent 65%),
+    radial-gradient(ellipse 50% 40% at 92% 92%, rgba(34, 211, 238, 0.12), transparent 65%);
+  pointer-events: none;
 }
 
 .chat-orb {
-  position: absolute;
+  position: fixed;
   border-radius: 50%;
   filter: blur(110px);
   opacity: 0.4;
@@ -752,6 +742,7 @@ input[type='range'].audio-seek::-webkit-slider-thumb:hover {
 .sidebar-panel {
   position: relative;
   z-index: 1;
+  min-height: 0;
   background: rgba(13, 13, 30, 0.55);
   backdrop-filter: blur(22px) saturate(150%);
   -webkit-backdrop-filter: blur(22px) saturate(150%);
@@ -790,6 +781,7 @@ input[type='range'].audio-seek::-webkit-slider-thumb:hover {
 .chat-area {
   position: relative;
   z-index: 1;
+  min-height: 0;
   background: transparent;
 }
 
