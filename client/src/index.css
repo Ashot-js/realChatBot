@@ -829,7 +829,7 @@ input[type='range'].audio-seek::-webkit-slider-thumb:hover {
 
 /* Плавающая стеклянная панель ввода сообщения */
 .message-input-bar {
-  margin: 0 12px 12px;
+  margin: 0 16px 16px;
   padding: 10px;
   border-radius: 18px;
   background: rgba(16, 16, 40, 0.65);
