@@ -269,3 +269,419 @@ input[type='range'].audio-seek::-webkit-slider-thumb {
 input[type='range'].audio-seek::-webkit-slider-thumb:hover {
   transform: scale(1.3);
 }
+
+/* ═══════════════════════════════════════════════════════════
+   AUTH PAGES — glassmorphism pro (login / register)
+   ═══════════════════════════════════════════════════════════ */
+.auth-page {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: linear-gradient(135deg, #0b0b1a 0%, #140f2e 45%, #0a1626 100%);
+  background-size: 200% 200%;
+  animation: authBgShift 16s ease-in-out infinite;
+  overflow: hidden;
+  perspective: 1200px;
+}
+
+.auth-bg-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 44px 44px;
+  -webkit-mask-image: radial-gradient(ellipse at 50% 40%, black 20%, transparent 75%);
+  mask-image: radial-gradient(ellipse at 50% 40%, black 20%, transparent 75%);
+}
+
+.auth-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.auth-orb--1 {
+  width: 520px;
+  height: 520px;
+  top: -140px;
+  left: -140px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.8), transparent 70%);
+  animation: authOrbA 20s ease-in-out infinite alternate;
+}
+
+.auth-orb--2 {
+  width: 560px;
+  height: 560px;
+  bottom: -180px;
+  right: -160px;
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.7), transparent 70%);
+  animation: authOrbB 24s ease-in-out infinite alternate;
+}
+
+.auth-orb--3 {
+  width: 320px;
+  height: 320px;
+  top: 45%;
+  left: 55%;
+  background: radial-gradient(circle, rgba(217, 70, 239, 0.6), transparent 70%);
+  opacity: 0.3;
+  animation: authOrbC 18s ease-in-out infinite alternate;
+}
+
+@keyframes authBgShift {
+  0%, 100% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+}
+
+@keyframes authOrbA {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(70px, 50px) scale(1.18); }
+  100% { transform: translate(-40px, 90px) scale(0.92); }
+}
+
+@keyframes authOrbB {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(-80px, -60px) scale(1.22); }
+  100% { transform: translate(50px, -30px) scale(0.88); }
+}
+
+@keyframes authOrbC {
+  0%   { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(-90px, -50px) scale(1.3); }
+}
+
+/* Карточка */
+.auth-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 400px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04));
+  backdrop-filter: blur(26px) saturate(170%);
+  -webkit-backdrop-filter: blur(26px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 24px;
+  padding: 40px 36px;
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  animation: authCardIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transition: transform 0.3s ease;
+}
+
+.auth-card:hover {
+  transform: translateY(-2px);
+}
+
+@keyframes authCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(34px) scale(0.95) rotateX(6deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateX(0);
+  }
+}
+
+/* Шапка */
+.auth-header {
+  text-align: center;
+  margin-bottom: 28px;
+  animation: authFadeUp 0.6s 0.18s ease both;
+}
+
+.auth-logo {
+  position: relative;
+  width: 66px;
+  height: 66px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #7c3aed, #06b6d4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin: 0 auto 18px;
+  z-index: 0;
+  animation: authFloat 5s ease-in-out infinite;
+  box-shadow: 0 10px 30px rgba(124, 58, 237, 0.35);
+}
+
+/* Жидкокристаллическое свечение */
+.auth-logo::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 24px;
+  background: conic-gradient(
+    from 0deg,
+    rgba(139, 92, 246, 0.55),
+    rgba(34, 211, 238, 0.4),
+    rgba(244, 114, 182, 0.5),
+    rgba(167, 139, 250, 0.55)
+  );
+  z-index: -1;
+  animation: authLiquid 9s linear infinite;
+  filter: blur(16px);
+  opacity: 0.55;
+}
+
+/* Глянцевый блик */
+.auth-logo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.35) 44%,
+    rgba(255, 255, 255, 0.08) 52%,
+    transparent 68%
+  );
+  background-size: 260% 260%;
+  animation: authSheen 5.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes authFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+
+@keyframes authLiquid {
+  0% {
+    transform: rotate(0deg) scale(1);
+    filter: blur(16px) hue-rotate(0deg);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.12);
+    filter: blur(20px) hue-rotate(45deg);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+    filter: blur(16px) hue-rotate(0deg);
+  }
+}
+
+@keyframes authSheen {
+  0%, 100% { background-position: 200% 0; }
+  50% { background-position: -60% 0; }
+}
+
+.auth-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.auth-subtitle {
+  color: rgba(241, 245, 249, 0.66);
+  font-size: 0.86rem;
+  margin-top: 6px;
+}
+
+/* Поля */
+.auth-field-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: rgba(241, 245, 249, 0.85);
+  margin-bottom: 6px;
+  margin-left: 2px;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.055);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #f1f5f9;
+  outline: none;
+  font-size: 0.9rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  transition: border-color 0.25s, box-shadow 0.25s, background 0.25s, transform 0.25s;
+}
+
+.auth-input::placeholder {
+  color: rgba(241, 245, 249, 0.4);
+}
+
+.auth-input:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.auth-input:focus {
+  border-color: rgba(139, 92, 246, 0.9);
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 0 4px rgba(139, 92, 246, 0.22),
+    0 8px 30px rgba(139, 92, 246, 0.18);
+}
+
+.auth-pw-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(241, 245, 249, 0.4);
+  padding: 2px;
+  font-size: 1rem;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.auth-pw-toggle:hover {
+  color: #22d3ee;
+  transform: translateY(-50%) scale(1.15);
+}
+
+/* Ошибка */
+.auth-error {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+  font-size: 0.85rem;
+  padding: 10px 14px;
+  border-radius: 12px;
+  animation: authShake 0.35s ease;
+}
+
+@keyframes authShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* Кнопка */
+.auth-btn {
+  position: relative;
+  width: 100%;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #8b5cf6, #6366f1, #06b6d4);
+  background-size: 220% 220%;
+  animation: authBtnGradient 6s ease infinite;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.92rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(99, 102, 241, 0.4);
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+
+.auth-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -85%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.55s ease;
+}
+
+.auth-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 40px rgba(99, 102, 241, 0.55);
+}
+
+.auth-btn:hover:not(:disabled)::after {
+  left: 140%;
+}
+
+.auth-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+.auth-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@keyframes authBtnGradient {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Каскадное появление полей */
+.auth-stagger > * {
+  animation: authFadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.auth-stagger > *:nth-child(1) { animation-delay: 0.3s; }
+.auth-stagger > *:nth-child(2) { animation-delay: 0.38s; }
+.auth-stagger > *:nth-child(3) { animation-delay: 0.46s; }
+.auth-stagger > *:nth-child(4) { animation-delay: 0.54s; }
+.auth-stagger > *:nth-child(5) { animation-delay: 0.62s; }
+
+@keyframes authFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Футер */
+.auth-footer {
+  margin-top: 22px;
+  text-align: center;
+  font-size: 0.86rem;
+  color: rgba(241, 245, 249, 0.66);
+}
+
+.auth-footer a {
+  color: #22d3ee;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
+.auth-footer a:hover {
+  color: #fff;
+  text-shadow: 0 0 14px rgba(34, 211, 238, 0.6);
+  text-decoration: underline;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-page,
+  .auth-card,
+  .auth-logo,
+  .auth-logo::before,
+  .auth-logo::after,
+  .auth-btn,
+  .auth-stagger > * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-page { padding: 16px; }
+  .auth-card { padding: 30px 22px; border-radius: 18px; }
+  .auth-title { font-size: 1.35rem; }
+}
