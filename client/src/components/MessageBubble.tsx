@@ -29,16 +29,10 @@ export default function MessageBubble({ message }: Props) {
   }
 
   return (
-    <div className={`flex ${isMine ? 'justify-end' : 'justify-start'} animate-slide-up`}>
-      {!isMine && (
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-xs font-bold text-white mr-2 shrink-0 mt-1 shadow-md">
-          {message.sender.username[0].toUpperCase()}
-        </div>
-      )}
-
-      <div className={`max-w-[70%] ${isMine ? 'items-end' : 'items-start'}`}>
+    <div className={`flex ${isMine ? 'justify-start' : 'justify-end'} animate-slide-up`}>
+      <div className={`max-w-[70%] ${isMine ? 'items-start' : 'items-end'}`}>
         {!isMine && (
-          <p className="text-xs text-slate-400 mb-0.5 ml-1">
+          <p className="text-xs text-slate-400 mb-0.5 mr-1 text-right">
             {message.sender.username}
           </p>
         )}
@@ -70,12 +64,18 @@ export default function MessageBubble({ message }: Props) {
 
         <p
           className={`text-xs text-slate-500 mt-0.5 ${
-            isMine ? 'text-right mr-1' : 'text-left ml-1'
+            isMine ? 'text-left ml-1' : 'text-right mr-1'
           }`}
         >
           {formatTime(message.createdAt)}
         </p>
       </div>
+
+      {!isMine && (
+        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-xs font-bold text-white ml-2 shrink-0 mt-1 shadow-md">
+          {message.sender.username[0].toUpperCase()}
+        </div>
+      )}
     </div>
   );
 }
@@ -113,8 +113,8 @@ function AudioPlayer({ url, isMine }: { url: string; isMine: boolean }) {
     <div
       className={`flex items-center gap-3 px-3 py-2.5 mb-1 ${
         isMine
-          ? 'bg-gradient-to-r from-violet-600 to-violet-700 rounded-2xl rounded-br-md shadow-lg shadow-violet-500/25'
-          : 'bg-surface-light border border-surface-lighter rounded-2xl rounded-bl-md'
+          ? 'bg-gradient-to-r from-violet-600 to-violet-700 rounded-2xl rounded-bl-md shadow-lg shadow-violet-500/25'
+          : 'bg-surface-light border border-surface-lighter rounded-2xl rounded-br-md'
       }`}
     >
       <audio ref={audioRef} src={fullUrl} preload="auto" onEnded={() => setPlaying(false)} />

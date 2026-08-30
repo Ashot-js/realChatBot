@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import { chatsApi, messagesApi } from '../services/api';
 import { useSocket } from './SocketContext';
+import { useAuth } from './AuthContext';
 import { Chat, Message, TypingUser } from '../types';
 
 interface ChatContextType {
@@ -21,6 +22,7 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 export function ChatProvider({ children }: { children: ReactNode }) {
   const { socket } = useSocket();
+  const { user } = useAuth();
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChat, setActiveChat] = useState<Chat | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -42,6 +44,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     refreshChats();
   }, [refreshChats]);
+
+  // ─── Reload chats after login (user appears) ──────────
+  useEffect(() => {
+    if (user?._id) {
+      refreshChats();
+    }
+  }, [user?._id, refreshChats]);
 
   // ─── Load messages when activeChat changes ─────────────
   useEffect(() => {

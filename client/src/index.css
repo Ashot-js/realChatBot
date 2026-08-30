@@ -89,12 +89,12 @@ body {
    ═══════════════════════════════════════════════════════════ */
 .message-bubble-mine {
   background: linear-gradient(135deg, #7c3aed, #6d28d9);
-  border-radius: 18px 18px 4px 18px;
+  border-radius: 18px 18px 18px 4px;
   box-shadow: 0 2px 12px rgba(124, 58, 237, 0.25);
 }
 .message-bubble-other {
   background: #1a1a3e;
-  border-radius: 18px 18px 18px 4px;
+  border-radius: 18px 18px 4px 18px;
   border: 1px solid rgba(124, 58, 237, 0.1);
 }
 
