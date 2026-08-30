@@ -822,3 +822,99 @@ input[type='range'].audio-seek::-webkit-slider-thumb:hover {
     animation-iteration-count: 1 !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   CHAT — поле ввода, имя, онлайн-статус
+   ═══════════════════════════════════════════════════════════ */
+
+/* Плавающая стеклянная панель ввода сообщения */
+.message-input-bar {
+  margin: 0 12px 12px;
+  padding: 10px;
+  border-radius: 18px;
+  background: rgba(16, 16, 40, 0.65);
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+.message-input-bar .chat-input {
+  height: 44px;
+  border-radius: 12px;
+}
+
+/* Шапка чата */
+.chat-header {
+  background: rgba(16, 16, 40, 0.5) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Статус в шапке — с цветной точкой */
+.chat-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(241, 245, 249, 0.55);
+}
+
+.chat-status::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #64748b;
+}
+
+.chat-status.online {
+  color: #34d399;
+}
+
+.chat-status.online::before {
+  background: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+  animation: onlinePulse 2s ease-in-out infinite;
+}
+
+/* Блок текущего пользователя внизу сайдбара */
+.sidebar-user {
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.045);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+/* Онлайн-статус пользователя — пульсирующая точка */
+.online-pulse {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #34d399;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.online-pulse::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+  animation: onlinePulse 2s ease-in-out infinite;
+}
+
+@keyframes onlinePulse {
+  0%   { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45); }
+  70%  { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-status.online::before,
+  .online-pulse::before {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

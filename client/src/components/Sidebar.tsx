@@ -205,7 +205,7 @@ export default function Sidebar() {
       </div>
 
       {/* Current user */}
-      <div className="p-3 border-t border-surface-lighter glass-strong flex items-center gap-3">
+      <div className="sidebar-user flex items-center gap-3">
         <label className="relative cursor-pointer group shrink-0">
           {user?.avatar ? (
             <img src={user.avatar} alt="" className="w-9 h-9 rounded-full object-cover shadow-md ring-2 ring-violet-500/30" />
@@ -235,8 +235,8 @@ export default function Sidebar() {
           />
         </label>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-slate-200 truncate">{user?.username}</p>
-          <p className="text-xs text-emerald-400">Online</p>
+          <p className="text-sm font-semibold text-slate-100 truncate">{user?.username}</p>
+          <p className="online-pulse">Online</p>
         </div>
       </div>
 

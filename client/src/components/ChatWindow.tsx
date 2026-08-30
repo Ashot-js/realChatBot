@@ -74,7 +74,7 @@ export default function ChatWindow() {
   return (
     <div className="flex-1 flex flex-col chat-area">
       {/* Header */}
-      <div className="h-14 border-b border-surface-lighter flex items-center px-4 gap-3 shrink-0 glass-strong">
+      <div className="h-14 border-b border-surface-lighter flex items-center px-4 gap-3 shrink-0 glass-strong chat-header">
         <div className="relative">
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-sm font-bold text-white shadow-lg">
             {chatName[0].toUpperCase()}
@@ -91,7 +91,7 @@ export default function ChatWindow() {
         </div>
         <div>
           <h3 className="text-sm font-semibold text-slate-100">{chatName}</h3>
-          <p className="text-xs text-slate-400">
+          <p className={`text-xs ${otherParticipant?.isOnline || activeChat.isGroup ? 'chat-status online' : 'chat-status'}`}>
             {activeChat.isGroup
               ? `${activeChat.participants.length} members`
               : otherParticipant?.isOnline

@@ -128,7 +128,7 @@ export default function MessageInput() {
   return (
     <form
       onSubmit={sendMessage}
-      className="p-3 border-t border-surface-lighter glass-strong flex items-end gap-1.5"
+      className="message-input-bar flex items-end gap-1.5"
     >
       {/* Emoji button */}
       <div className="relative">
