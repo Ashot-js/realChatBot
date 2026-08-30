@@ -49,7 +49,7 @@ export default function ChatWindow() {
 
   if (!activeChat) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-dark-900">
+      <div className="flex-1 flex items-center justify-center chat-area">
         <div className="text-center">
           <div className="text-6xl mb-5 drop-shadow-lg">💬</div>
           <h2 className="text-xl font-semibold text-slate-100 mb-2">
@@ -72,7 +72,7 @@ export default function ChatWindow() {
     : activeChat.participants.find((p) => p._id !== user?._id);
 
   return (
-    <div className="flex-1 flex flex-col bg-dark-900">
+    <div className="flex-1 flex flex-col chat-area">
       {/* Header */}
       <div className="h-14 border-b border-surface-lighter flex items-center px-4 gap-3 shrink-0 glass-strong">
         <div className="relative">

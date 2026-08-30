@@ -64,7 +64,7 @@ export default function Sidebar() {
   }
 
   return (
-    <div className="w-80 bg-surface border-r border-surface-lighter flex flex-col h-full shrink-0">
+    <div className="w-80 sidebar-panel flex flex-col h-full shrink-0">
       {/* Header */}
       <div className="p-4 border-b border-surface-lighter glass-strong">
         <div className="flex items-center justify-between mb-3">
@@ -145,7 +145,7 @@ export default function Sidebar() {
       </div>
 
       {/* Chat list */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto chat-list">
         {chats.length === 0 && !searchQuery && (
           <div className="text-center py-10 px-4">
             <p className="text-4xl mb-3">💬</p>

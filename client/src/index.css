@@ -685,3 +685,148 @@ input[type='range'].audio-seek::-webkit-slider-thumb:hover {
   .auth-card { padding: 30px 22px; border-radius: 18px; }
   .auth-title { font-size: 1.35rem; }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   CHAT UI — glassmorphism (оболочка, сайдбар, окно)
+   ═══════════════════════════════════════════════════════════ */
+.chat-shell {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0b0b1a 0%, #140f2e 45%, #0a1626 100%);
+  background-size: 200% 200%;
+  animation: authBgShift 16s ease-in-out infinite;
+}
+
+.chat-bg-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 44px 44px;
+  -webkit-mask-image: radial-gradient(ellipse at 50% 40%, black 20%, transparent 75%);
+  mask-image: radial-gradient(ellipse at 50% 40%, black 20%, transparent 75%);
+}
+
+.chat-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(110px);
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.chat-orb--1 {
+  width: 560px;
+  height: 560px;
+  top: -160px;
+  left: -160px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.8), transparent 70%);
+  animation: authOrbA 20s ease-in-out infinite alternate;
+}
+
+.chat-orb--2 {
+  width: 600px;
+  height: 600px;
+  bottom: -200px;
+  right: -180px;
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.7), transparent 70%);
+  animation: authOrbB 24s ease-in-out infinite alternate;
+}
+
+.chat-orb--3 {
+  width: 340px;
+  height: 340px;
+  top: 40%;
+  left: 45%;
+  background: radial-gradient(circle, rgba(217, 70, 239, 0.6), transparent 70%);
+  opacity: 0.25;
+  animation: authOrbC 18s ease-in-out infinite alternate;
+}
+
+/* Сайдбар — стекло */
+.sidebar-panel {
+  position: relative;
+  z-index: 1;
+  background: rgba(13, 13, 30, 0.55);
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Поиск в сайдбаре — стеклянное поле */
+.sidebar-panel input[type='text'] {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.sidebar-panel input[type='text']:focus {
+  border-color: rgba(139, 92, 246, 0.9) !important;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2) !important;
+}
+
+/* Список чатов — hover и активный */
+.chat-list > button {
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.chat-list > button:hover {
+  background: rgba(255, 255, 255, 0.07) !important;
+}
+
+.chat-list > button.border-l-violet-500 {
+  background: rgba(124, 58, 237, 0.18) !important;
+  border-left-color: #8b5cf6;
+  box-shadow: inset 0 0 30px rgba(124, 58, 237, 0.08);
+}
+
+/* Область чата — прозрачная поверх фона */
+.chat-area {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+}
+
+/* Поле ввода сообщения — стекло */
+.chat-input {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.chat-input:focus {
+  border-color: #8b5cf6 !important;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.22) !important;
+}
+
+/* Чужие сообщения — стеклянный пузырь */
+.message-bubble-other {
+  background: rgba(26, 26, 62, 0.6) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Шапка чата и нижняя панель — усиленное стекло */
+.glass-strong {
+  background: rgba(16, 16, 40, 0.6) !important;
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-shell,
+  .chat-orb--1,
+  .chat-orb--2,
+  .chat-orb--3 {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
