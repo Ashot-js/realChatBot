@@ -6,7 +6,7 @@ import { Chat, User } from '../types';
 import CreateGroupModal from './CreateGroupModal';
 import OnlineStatus from './OnlineStatus';
 
-export default function Sidebar() {
+export default function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { user, logout } = useAuth();
   const { chats, activeChat, setActiveChat, createPrivateChat, refreshChats } = useChatContext();
   const [searchQuery, setSearchQuery] = useState('');
@@ -64,7 +64,7 @@ export default function Sidebar() {
   }
 
   return (
-    <div className="w-80 sidebar-panel flex flex-col h-full shrink-0">
+    <div className={`sidebar-panel flex flex-col h-full shrink-0 fixed inset-y-0 left-0 z-40 w-[85%] max-w-xs transform transition-transform duration-200 md:static md:translate-x-0 md:w-80 ${open ? 'translate-x-0' : '-translate-x-full'}`}>
       {/* Header */}
       <div className="p-4 border-b border-surface-lighter glass-strong">
         <div className="flex items-center justify-between mb-3">
@@ -72,6 +72,15 @@ export default function Sidebar() {
             <span className="gradient-text">💬 Chats</span>
           </h2>
           <div className="flex items-center gap-2">
+            <button
+              onClick={onClose}
+              className="md:hidden text-slate-400 hover:text-white p-1"
+              title="Close chats"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
             <button
               onClick={() => setShowGroupModal(true)}
               className="text-slate-400 hover:text-violet-400 transition-colors p-1"

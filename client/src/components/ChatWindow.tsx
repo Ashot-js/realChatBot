@@ -6,7 +6,7 @@ import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
 import TypingIndicator from './TypingIndicator';
 
-export default function ChatWindow() {
+export default function ChatWindow({ onOpenSidebar }: { onOpenSidebar: () => void }) {
   const { activeChat, messages, messagesLoading, loadMoreMessages, typingUsers } = useChatContext();
   const { socket } = useSocket();
   const { user } = useAuth();
@@ -75,6 +75,15 @@ export default function ChatWindow() {
     <div className="flex-1 flex flex-col chat-area">
       {/* Header */}
       <div className="h-14 border-b border-surface-lighter flex items-center px-4 gap-3 shrink-0 glass-strong chat-header">
+        <button
+          onClick={onOpenSidebar}
+          className="md:hidden text-slate-300 hover:text-white p-1 -ml-1"
+          title="Open chats"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
         <div className="relative">
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-sm font-bold text-white shadow-lg">
             {chatName[0].toUpperCase()}
