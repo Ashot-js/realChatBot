@@ -128,14 +128,14 @@ export default function MessageInput() {
   return (
     <form
       onSubmit={sendMessage}
-      className="message-input-bar flex items-end gap-1.5"
+      className="message-input-bar flex items-center gap-1.5"
     >
       {/* Emoji button */}
       <div className="relative">
         <button
           type="button"
           onClick={() => setShowEmoji(!showEmoji)}
-          className="text-slate-400 hover:text-yellow-400 transition-colors p-1.5"
+          className="text-slate-400 hover:text-yellow-400 transition-colors w-9 h-9 flex items-center justify-center text-lg leading-none"
         >
           😊
         </button>
@@ -147,7 +147,7 @@ export default function MessageInput() {
       </div>
 
       {/* File upload */}
-      <label className="text-slate-400 hover:text-violet-400 transition-colors p-1.5 cursor-pointer">
+      <label className="text-slate-400 hover:text-violet-400 transition-colors w-9 h-9 flex items-center justify-center cursor-pointer">
         {uploading ? (
           <div className="w-4 h-4 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
         ) : (
@@ -185,7 +185,7 @@ export default function MessageInput() {
       <button
         type="submit"
         disabled={!text.trim()}
-        className="bg-gradient-to-r from-violet-600 to-violet-700 hover:from-violet-500 hover:to-violet-600 disabled:opacity-30 disabled:cursor-not-allowed text-white p-2.5 rounded-xl transition-all shadow-lg shadow-violet-500/20"
+        className="bg-gradient-to-r from-violet-600 to-violet-700 hover:from-violet-500 hover:to-violet-600 disabled:opacity-30 disabled:cursor-not-allowed text-white w-10 h-10 flex items-center justify-center rounded-xl transition-all shadow-lg shadow-violet-500/20"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
