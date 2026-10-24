@@ -29,10 +29,15 @@ export default function MessageBubble({ message }: Props) {
   }
 
   return (
-    <div className={`flex ${isMine ? 'justify-start' : 'justify-end'} animate-slide-up`}>
-      <div className={`max-w-[70%] ${isMine ? 'items-start' : 'items-end'}`}>
+    <div className={`flex items-end gap-2 ${isMine ? 'justify-end' : 'justify-start'} animate-slide-up`}>
+      {!isMine && (
+        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-xs font-bold text-white shrink-0 shadow-md">
+          {message.sender.username[0].toUpperCase()}
+        </div>
+      )}
+      <div className="max-w-[70%]">
         {!isMine && (
-          <p className="text-xs text-slate-400 mb-0.5 mr-1 text-right">
+          <p className="text-xs text-slate-400 mb-0.5 ml-1">
             {message.sender.username}
           </p>
         )}
@@ -64,18 +69,12 @@ export default function MessageBubble({ message }: Props) {
 
         <p
           className={`text-xs text-slate-500 mt-0.5 ${
-            isMine ? 'text-left ml-1' : 'text-right mr-1'
+            isMine ? 'text-right mr-1' : 'text-left ml-1'
           }`}
         >
           {formatTime(message.createdAt)}
         </p>
       </div>
-
-      {!isMine && (
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-xs font-bold text-white ml-2 shrink-0 mt-1 shadow-md">
-          {message.sender.username[0].toUpperCase()}
-        </div>
-      )}
     </div>
   );
 }
