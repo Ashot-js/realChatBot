@@ -7,7 +7,7 @@ const API_BASE = import.meta.env.VITE_SOCKET_URL
 const api = axios.create({
   baseURL: API_BASE,
   headers: { 'Content-Type': 'application/json' },
-  timeout: 3000,
+  timeout: 90000,
 });
 
 // Attach token
@@ -22,9 +22,9 @@ api.interceptors.request.use((config) => {
 // ─── Auth ────────────────────────────────────────────────
 export const authApi = {
   register: (data: { username: string; email: string; password: string }) =>
-    api.post('/auth/register', data, { timeout: 20000 }),
+    api.post('/auth/register', data, { timeout: 90000 }),
   login: (data: { email: string; password: string }) =>
-    api.post('/auth/login', data, { timeout: 20000 }),
+    api.post('/auth/login', data, { timeout: 90000 }),
   me: () => api.get('/auth/me'),
 };
 
@@ -60,7 +60,7 @@ export const uploadApi = {
     formData.append('file', file);
     return api.post('/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
-      timeout: 30000,
+      timeout: 90000,
     });
   },
 };

@@ -18,7 +18,15 @@ export default function Register() {
     try {
       await register(username, email, password);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Registration failed';
+      let message = 'Registration failed';
+      const e = err as { code?: string; message?: string; response?: { data?: { error?: string } } };
+      if (e?.code === 'ECONNABORTED' || e?.code === 'ERR_NETWORK') {
+        message = 'Server is waking up (first load can take ~1 min). Please try again.';
+      } else if (e?.response?.data?.error) {
+        message = e.response.data.error;
+      } else if (e?.message) {
+        message = e.message;
+      }
       setError(message);
     } finally {
       setLoading(false);
