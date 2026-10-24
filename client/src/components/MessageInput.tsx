@@ -128,7 +128,7 @@ export default function MessageInput() {
   return (
     <form
       onSubmit={sendMessage}
-      className="message-input-bar flex items-center gap-1.5"
+      className="message-input-bar flex items-center gap-1"
     >
       {/* Emoji button */}
       <div className="relative">
@@ -178,7 +178,7 @@ export default function MessageInput() {
         value={text}
         onChange={(e) => handleTextChange(e.target.value)}
         placeholder="Type a message..."
-        className="chat-input flex-1"
+        className="chat-input flex-1 min-w-0"
       />
 
       {/* Send button */}
