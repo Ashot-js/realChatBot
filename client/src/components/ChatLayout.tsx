@@ -1,4 +1,5 @@
 import { useChat } from '../context/ChatContext';
+import { useVisibleHeight } from '../hooks/useVisibleHeight';
 import Sidebar from './Sidebar';
 import ChatWindow from './ChatWindow';
 
@@ -8,9 +9,10 @@ import ChatWindow from './ChatWindow';
  */
 export default function ChatLayout() {
   const { activeChat } = useChat();
+  const height = useVisibleHeight();
 
   return (
-    <div className="flex h-dvh overflow-hidden">
+    <div className="flex h-dvh overflow-hidden" style={height ? { height } : undefined}>
       <Sidebar className={activeChat ? 'hidden md:flex' : 'flex'} />
       {activeChat ? (
         <ChatWindow key={activeChat._id} chat={activeChat} />

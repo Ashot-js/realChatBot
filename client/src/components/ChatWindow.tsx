@@ -41,6 +41,17 @@ export default function ChatWindow({ chat }: { chat: Chat }) {
     scrollState.current = { ...prev, height: el.scrollHeight, first, last };
   }, [messages, user?._id]);
 
+  // The list gets shorter when the phone keyboard opens; keep the latest message in view.
+  useEffect(() => {
+    const el = scroller.current;
+    if (!el) return;
+    const observer = new ResizeObserver(() => {
+      if (scrollState.current.nearBottom) el.scrollTop = el.scrollHeight;
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   useEffect(() => {
     if (socket && messages.length) socket.emit('messages:read', { chatId: chat._id });
   }, [socket, chat._id, messages.length]);
