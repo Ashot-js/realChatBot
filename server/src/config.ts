@@ -4,70 +4,54 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/real-time-chat';
-const REDIS_URL = process.env.REDIS_URL || '';
+const isProduction = process.env.NODE_ENV === 'production';
 
-// ─── MongoDB ────────────────────────────────────────────────
-export async function connectMongo(): Promise<void> {
-  try {
-    await mongoose.connect(MONGO_URI);
-    console.log('[MongoDB] Connected to Atlas');
-  } catch (err) {
-    console.error('[MongoDB] Connection failed:', err);
-    process.exit(1);
-  }
+// A missing secret in production would let anyone forge tokens with the dev default.
+if (isProduction && !process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET must be set in production');
 }
 
-// ─── Redis (optional for local dev) ─────────────────────────
+export const config = {
+  port: parseInt(process.env.PORT || '5000', 10),
+  mongoUri: process.env.MONGO_URI || 'mongodb://localhost:27017/real-time-chat',
+  redisUrl: process.env.REDIS_URL || '',
+  jwtSecret: process.env.JWT_SECRET || 'local-dev-secret',
+  jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
+  // Comma-separated list of allowed frontend origins.
+  clientUrls: (process.env.CLIENT_URL || 'http://localhost:5173').split(',').map((u) => u.trim()),
+  isProduction,
+};
+
+export async function connectMongo(): Promise<void> {
+  await mongoose.connect(config.mongoUri);
+  console.log('[MongoDB] Connected');
+}
+
+// ─── Redis: optional, only used for the "who is online" list ────────
 let redisClient: Redis | null = null;
 
 export function getRedis(): Redis | null {
   return redisClient;
 }
 
-export async function connectRedis(): Promise<Redis | null> {
-  if (!REDIS_URL) {
-    console.warn('[Redis] REDIS_URL not set — skipping (online status unavailable)');
-    return null;
+export async function connectRedis(): Promise<void> {
+  if (!config.redisUrl) {
+    console.warn('[Redis] REDIS_URL not set — online list disabled');
+    return;
   }
 
-  redisClient = new Redis(REDIS_URL, {
+  const client = new Redis(config.redisUrl, {
     lazyConnect: true,
     maxRetriesPerRequest: 3,
-    retryStrategy(times: number): number | void {
-      if (times > 5) {
-        console.error('[Redis] Giving up after 5 retries — running without Redis');
-        return; // stop retrying
-      }
-      return Math.min(times * 1000, 5000);
-    },
+    retryStrategy: (times) => (times > 5 ? null : Math.min(times * 1000, 5000)),
   });
-
-  redisClient.on('error', (err) => {
-    const code = (err as NodeJS.ErrnoException).code;
-    if (code === 'ECONNREFUSED' || code === 'ENOTFOUND') {
-      console.warn(`[Redis] Unavailable: ${err.message}`);
-    } else {
-      console.error('[Redis] Error:', err.message);
-    }
-  });
+  client.on('error', (err) => console.warn('[Redis]', err.message));
 
   try {
-    await redisClient.connect();
-    console.log('[Redis] Connected to Redis Cloud');
-    return redisClient;
-  } catch (err) {
+    await client.connect();
+    redisClient = client;
+    console.log('[Redis] Connected');
+  } catch {
     console.warn('[Redis] Connection failed — running without Redis');
-    redisClient = null;
-    return null;
   }
 }
-
-// ─── App Config ─────────────────────────────────────────────
-export const config = {
-  port: parseInt(process.env.PORT || '5000', 10),
-  jwtSecret: process.env.JWT_SECRET || 'fallback-dev-secret',
-  jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
-  clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
-  nodeEnv: process.env.NODE_ENV || 'development',
-};

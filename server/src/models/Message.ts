@@ -4,7 +4,7 @@ export interface IMessage extends Document {
   chat: mongoose.Types.ObjectId;
   sender: mongoose.Types.ObjectId;
   content: string;
-  type: 'text' | 'image' | 'file' | 'system';
+  type: 'text' | 'image' | 'file' | 'audio' | 'system';
   fileUrl?: string;
   fileName?: string;
   fileSize?: number;
@@ -28,6 +28,7 @@ const messageSchema = new Schema<IMessage>(
     content: {
       type: String,
       default: '',
+      maxlength: 4000,
     },
     type: {
       type: String,

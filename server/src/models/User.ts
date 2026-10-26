@@ -45,3 +45,6 @@ userSchema.set('toJSON', {
 } as mongoose.ToObjectOptions);
 
 export const User = mongoose.model<IUser>('User', userSchema);
+
+/** What other users may see about someone (no email). */
+export const PUBLIC_USER_FIELDS = 'username avatar isOnline lastSeen';
