@@ -1,173 +1,104 @@
-import { useState, useRef, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
+const MAX_SECONDS = 120;
 
 interface Props {
-  onSend: (blob: Blob) => void;
+  onSend: (file: File) => void;
+  onError: (message: string) => void;
+  /** Called with true while recording, so the input bar can make room. */
+  onRecordingChange: (recording: boolean) => void;
 }
 
-export default function VoiceRecorder({ onSend }: Props) {
-  const [recording, setRecording] = useState(false);
-  const [elapsed, setElapsed] = useState(0);
-  const [cancelling, setCancelling] = useState(false);
+function pickMimeType(): string {
+  // Chrome/Firefox record Opus in WebM; Safari only supports MP4/AAC.
+  return ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'].find((t) => MediaRecorder.isTypeSupported(t)) ?? '';
+}
 
-  const mediaRecorder = useRef<MediaRecorder | null>(null);
-  const chunks = useRef<Blob[]>([]);
-  const timerRef = useRef<ReturnType<typeof setInterval>>();
-  const startY = useRef<number>(0);
-  const touchMoved = useRef(false);
+const formatTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
-  const startRecording = useCallback(async () => {
+export default function VoiceRecorder({ onSend, onError, onRecordingChange }: Props) {
+  const [seconds, setSeconds] = useState<number | null>(null); // null = not recording
+  const recorder = useRef<MediaRecorder | null>(null);
+  const discard = useRef(false);
+
+  async function start() {
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+      onError('Voice messages are not supported in this browser');
+      return;
+    }
+    let stream: MediaStream;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream, {
-        mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-          ? 'audio/webm;codecs=opus'
-          : 'audio/webm',
-      });
-
-      chunks.current = [];
-      recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunks.current.push(e.data);
-      };
-
-      recorder.onstop = () => {
-        // Stop all tracks
-        stream.getTracks().forEach((t) => t.stop());
-
-        if (!cancelling) {
-          const blob = new Blob(chunks.current, { type: recorder.mimeType });
-          if (blob.size > 0) {
-            onSend(blob);
-          }
-        }
-        setCancelling(false);
-        setRecording(false);
-        setElapsed(0);
-        if (timerRef.current) clearInterval(timerRef.current);
-      };
-
-      recorder.start();
-      mediaRecorder.current = recorder;
-      setRecording(true);
-      setElapsed(0);
-      touchMoved.current = false;
-
-      timerRef.current = setInterval(() => {
-        setElapsed((prev) => prev + 1);
-      }, 1000);
-    } catch (err) {
-      console.error('Microphone access denied:', err);
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch {
+      onError('Microphone access was denied');
+      return;
     }
-  }, [cancelling, onSend]);
 
-  const stopRecording = useCallback(() => {
-    if (mediaRecorder.current && mediaRecorder.current.state === 'recording') {
-      mediaRecorder.current.stop();
+    const mimeType = pickMimeType();
+    const rec = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+    const chunks: Blob[] = [];
+    rec.ondataavailable = (e) => e.data.size && chunks.push(e.data);
+    rec.onstop = () => {
+      stream.getTracks().forEach((t) => t.stop());
+      recorder.current = null;
+      setSeconds(null);
+      onRecordingChange(false);
+      if (discard.current || chunks.length === 0) return;
+      const type = rec.mimeType.split(';')[0] || 'audio/webm';
+      onSend(new File(chunks, `voice-${Date.now()}.${type.includes('mp4') ? 'm4a' : 'webm'}`, { type }));
+    };
+
+    discard.current = false;
+    recorder.current = rec;
+    rec.start();
+    setSeconds(0);
+    onRecordingChange(true);
+  }
+
+  const stop = (send: boolean) => {
+    discard.current = !send;
+    recorder.current?.stop();
+  };
+
+  // Recording timer; stops automatically at the limit.
+  useEffect(() => {
+    if (seconds === null) return;
+    if (seconds >= MAX_SECONDS) {
+      stop(true);
+      return;
     }
-    if (timerRef.current) clearInterval(timerRef.current);
-  }, []);
+    const t = setTimeout(() => setSeconds(seconds + 1), 1000);
+    return () => clearTimeout(t);
+  }, [seconds]);
 
-  const cancelRecording = useCallback(() => {
-    setCancelling(true);
-    stopRecording();
-  }, [stopRecording]);
+  // Release the microphone if the component goes away mid-recording.
+  useEffect(() => () => stop(false), []);
 
-  // Touch / pointer handling for swipe-to-cancel
-  function handlePointerDown(e: React.PointerEvent) {
-    startY.current = e.clientY;
-    touchMoved.current = false;
-  }
-
-  function handlePointerMove(e: React.PointerEvent) {
-    const deltaY = startY.current - e.clientY;
-    setCancelling(deltaY > 50);
-    if (Math.abs(deltaY) > 10) touchMoved.current = true;
-  }
-
-  function handlePointerUp() {
-    if (touchMoved.current) {
-      if (cancelling) {
-        cancelRecording();
-      } else {
-        stopRecording();
-      }
-    } else {
-      stopRecording();
-    }
-  }
-
-  function formatTime(sec: number): string {
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    return `${m}:${s.toString().padStart(2, '0')}`;
-  }
-
-  if (recording) {
+  if (seconds === null) {
     return (
-      <div className="flex items-center gap-2">
-        {/* Cancel zone hint */}
-        <div className={`voice-cancel-zone ${cancelling ? 'active' : ''}`}>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-        </div>
-
-        {/* Recording bar */}
-        <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2 flex-1">
-          {/* Pulsing dot */}
-          <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse-dot shrink-0" />
-
-          {/* Timer */}
-          <span className="text-red-400 text-sm font-mono tabular-nums min-w-[3ch]">
-            {formatTime(elapsed)}
-          </span>
-
-          {/* Waveform animation */}
-          <div className="flex items-center gap-0.5 flex-1 justify-center h-6">
-            {Array.from({ length: 16 }).map((_, i) => (
-              <div
-                key={i}
-                className="w-0.5 rounded-full bg-red-400 animate-wave"
-                style={{
-                  animationDelay: `${i * 0.08}s`,
-                  height: `${8 + Math.sin(i * 0.7 + elapsed * 0.5) * 10}px`,
-                }}
-              />
-            ))}
-          </div>
-
-          {/* Stop / Send button */}
-          <button
-            type="button"
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            className="voice-recorder-btn recording shrink-0"
-            title="Release to send, swipe up to cancel"
-          >
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M8 5v14l11-7z" />
-            </svg>
-          </button>
-        </div>
-      </div>
+      <button type="button" onClick={start} className="flex size-10 shrink-0 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white/5 hover:text-violet-300" aria-label="Record voice message">
+        <svg className="size-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-14 0m7 7v4m-4 0h8m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
+      </button>
     );
   }
 
   return (
-    <button
-      type="button"
-      onClick={startRecording}
-      className="voice-recorder-btn p-1.5"
-      title="Record voice message"
-    >
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
-        />
-      </svg>
-    </button>
+    <div className="flex min-w-0 flex-1 items-center gap-2">
+      <button type="button" onClick={() => stop(false)} className="flex size-10 shrink-0 items-center justify-center rounded-xl text-red-400 hover:bg-red-500/10" aria-label="Discard recording">
+        <svg className="size-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3M4 7h16" /></svg>
+      </button>
+      <div className="flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2">
+        <span className="size-2.5 shrink-0 animate-pulse rounded-full bg-red-500" />
+        <span className="font-mono text-sm text-red-300 tabular-nums">{formatTime(seconds)}</span>
+        <span className="flex h-5 flex-1 items-center gap-0.5 overflow-hidden" aria-hidden>
+          {Array.from({ length: 24 }, (_, i) => (
+            <span key={i} className="h-full w-0.5 shrink-0 animate-wave rounded-full bg-red-400/70" style={{ animationDelay: `${(i % 6) * 0.1}s` }} />
+          ))}
+        </span>
+      </div>
+      <button type="button" onClick={() => stop(true)} className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-violet-600 text-white hover:bg-violet-500" aria-label="Send voice message">
+        <svg className="size-5" fill="currentColor" viewBox="0 0 24 24"><path d="M3.4 20.4l17.45-7.48a1 1 0 000-1.84L3.4 3.6a1 1 0 00-1.39.92L2 9.12c0 .5.37.93.87.99L17 12 2.87 13.88c-.5.07-.87.5-.87 1l.01 4.6a1 1 0 001.39.92z" /></svg>
+      </button>
+    </div>
   );
 }

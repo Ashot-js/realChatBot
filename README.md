@@ -1,167 +1,54 @@
-# 💬 Real-Time Chat
+# RealChat — real-time chat
 
-Full-stack real-time chat application built with React, Node.js, Socket.IO, MongoDB Atlas, and Redis Cloud.
+Private and group chats with live delivery, typing indicator, online status, photos, files and voice messages.
+Works on phones (full-screen list ↔ conversation), tablets and desktops (side by side).
 
-## Features
+**App:** https://realchatbot-app.web.app
+**API:** https://realchatbot.onrender.com/api/health
 
-- 🔐 **JWT Authentication** — Register / Login with secure password hashing
-- 💬 **Private Chats** — One-on-one real-time messaging
-- 👥 **Group Chats** — Create rooms, add participants
-- 🟢 **Online Status** — Live user presence tracking via Redis
-- ⌨️ **Typing Indicator** — Real-time "user is typing..."
-- 📜 **Message History** — Infinite scroll with pagination
-- 😊 **Emoji Picker** — Built-in emoji selector
-- 📎 **File Upload** — Send images and documents (all file types)
-- 🎨 **Dark Navy Theme** — Professional dark blue + white color scheme
+## Stack (all free tiers)
 
-## Tech Stack
+| Part | Where | Tech |
+|------|-------|------|
+| Client (`client/`) | Firebase Hosting | React 19, TypeScript, Tailwind CSS 4, Socket.IO client, Vite |
+| Server (`server/`) | Render (Free) | Node, Express 5, Socket.IO, Mongoose, Zod, JWT, helmet |
+| Database | MongoDB Atlas (M0) | users, chats, messages; uploaded files in GridFS |
+| Presence | Upstash Redis (optional) | "who is online" list |
 
-| Layer | Technology |
-|---|---|
-| **Frontend** | React 18, TypeScript, Tailwind CSS, Vite |
-| **Backend** | Node.js, Express, TypeScript |
-| **Real-time** | Socket.IO (WebSocket) |
-| **Database** | MongoDB Atlas (Mongoose ODM) |
-| **Cache/PubSub** | Redis Cloud (ioredis) |
-| **Auth** | JWT (JSON Web Tokens) |
-| **File Storage** | Local disk (uploads/) |
+The free Render instance sleeps when idle — the first request after a pause takes ~50 s.
 
-## Project Structure
+## How it works
 
-```
-real-time-chat/
-├── client/                  # React frontend
-│   ├── src/
-│   │   ├── components/      # UI components
-│   │   ├── context/         # React contexts (Auth, Socket, Chat)
-│   │   ├── pages/           # Login, Register
-│   │   ├── services/        # API client, Socket.IO client
-│   │   └── types/           # TypeScript interfaces
-│   ├── index.html
-│   ├── tailwind.config.js
-│   └── vite.config.ts
-├── server/                  # Express + Socket.IO backend
-│   ├── src/
-│   │   ├── middleware/      # JWT auth middleware
-│   │   ├── models/          # Mongoose models (User, Message, Chat)
-│   │   ├── routes/          # REST API routes
-│   │   ├── socket/          # Socket.IO event handlers
-│   │   └── config.ts        # MongoDB, Redis, app config
-│   └── .env.example
-├── DEPLOY.md                # Deployment guide + pre-push checklist
-└── README.md                # This file
-```
+- **Real time:** one WebSocket (Socket.IO) per signed-in tab. The server puts each socket in the
+  rooms of the user's chats; a new chat is pushed to all its members (`chat:new`) so it appears
+  without a reload.
+- **Privacy:** history (`GET /api/messages/:chatId`), live rooms, typing and read receipts are only
+  available to chat members — checked against the database on the server, never trusted from the client.
+- **Files:** uploaded to MongoDB GridFS (Render's free disk is wiped on restart). Whitelisted types,
+  5 MB max, served with `nosniff` and a sandbox CSP; byte ranges for Safari audio.
 
-## Quick Start
-
-### Prerequisites
-
-- **Node.js** 18+
-- **MongoDB Atlas** account (free tier)
-- **Redis Cloud** account (free tier)
-
-### 1. Clone & Install
+## Run locally
 
 ```bash
-git clone <your-repo-url>
-cd real-time-chat
-
-# Install server dependencies
+# server
 cd server
-npm install
+cp .env.example .env     # MONGO_URI (Atlas or local), JWT_SECRET
+npm install              # also compiles TypeScript
+npm run dev              # http://localhost:5000
 
-# Install client dependencies
-cd ../client
-npm install
-```
-
-### 2. Environment Variables
-
-Copy the example env file and fill in your values:
-
-```bash
-cd server
-cp .env.example .env
-```
-
-Edit `server/.env` with your actual credentials:
-
-```env
-MONGO_URI=mongodb+srv://<user>:<pass>@cluster0.xxxxx.mongodb.net/real-time-chat
-REDIS_URL=redis://default:<pass>@redis-xxxxx.c000.us-east-1-mz.ec2.cloud.redislabs.com:00000
-JWT_SECRET=your-random-secret-string-here
-PORT=5000
-CLIENT_URL=http://localhost:5173
-```
-
-### 3. Run Locally
-
-**Terminal 1 — Server:**
-```bash
-cd server
-npm run dev
-```
-
-**Terminal 2 — Client:**
-```bash
+# client (second terminal)
 cd client
-npm run dev
+npm install
+npm run dev              # http://localhost:5173 — /api and /socket.io are proxied to :5000
 ```
 
-Open [http://localhost:5173](http://localhost:5173) in your browser.
+## Checks
 
-### 4. Test with Two Tabs
+```bash
+cd server && API_BASE=http://localhost:5000 npm run smoke   # 34 API + Socket.IO checks
+cd client && npm run lint && npm run build
+```
 
-1. Open `http://localhost:5173` in two browser tabs
-2. Register two different users
-3. Search for the other user in the sidebar and start chatting!
+`npm run smoke` creates throwaway `smoke-*` users — run it against a local database, or delete them after.
 
-## API Endpoints
-
-### Auth
-- `POST /api/auth/register` — Register new user
-- `POST /api/auth/login` — Login
-- `GET /api/auth/me` — Get current user
-
-### Users
-- `GET /api/users/search?q=...` — Search users
-- `GET /api/users/online` — Get online users
-- `GET /api/users/:id` — Get user by ID
-
-### Chats
-- `GET /api/chats` — Get all user chats
-- `GET /api/chats/:id` — Get chat by ID
-- `POST /api/chats/private` — Create/get private chat
-- `POST /api/chats/group` — Create group chat
-- `PUT /api/chats/:id/participants` — Add participant to group
-
-### Messages
-- `GET /api/messages/:chatId?page=1&limit=50` — Get message history
-
-### Upload
-- `POST /api/upload` — Upload file (multipart/form-data)
-
-## Socket.IO Events
-
-### Client → Server
-| Event | Payload |
-|---|---|
-| `message:send` | `{ chatId, content, type, fileUrl?, fileName?, fileSize? }` |
-| `typing:start` | `{ chatId }` |
-| `typing:stop` | `{ chatId }` |
-| `messages:read` | `{ chatId }` |
-| `chat:join` | `chatId` |
-
-### Server → Client
-| Event | Payload |
-|---|---|
-| `message:new` | `Message` object |
-| `typing:update` | `{ chatId, userId, isTyping }` |
-| `user:online` | `{ userId }` |
-| `user:offline` | `{ userId }` |
-| `messages:read:ack` | `{ chatId, userId }` |
-| `chat:joined` | `string[]` (chat IDs) |
-
-## License
-
-MIT
+Deployment: see [DEPLOY.md](DEPLOY.md).

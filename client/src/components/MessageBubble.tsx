@@ -1,157 +1,85 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Message } from '../types';
-import FilePreview from './FilePreview';
+import { fileUrl } from '../services/api';
+import { formatSize, formatTime } from '../utils/chat';
+import type { Message } from '../types';
+import Avatar from './Avatar';
 
-interface Props {
-  message: Message;
+// Only our own file paths or plain http(s) links are ever rendered as a link or media source.
+const safeUrl = (url?: string) => (url && /^(\/api\/files\/|https?:\/\/)/.test(url) ? fileUrl(url) : null);
+
+const unavailable = (what: string) => (
+  <p className="rounded-2xl border border-line bg-surface-2 px-3 py-2 text-xs text-slate-400 italic">{what} unavailable</p>
+);
+
+function Attachment({ message }: { message: Message }) {
+  const [broken, setBroken] = useState(false);
+  const url = safeUrl(message.fileUrl);
+  if (!url) return unavailable('Attachment');
+
+  if (message.type === 'image') {
+    // Files from before the move to database storage were lost when the old server restarted.
+    if (broken) return unavailable('Image');
+    return (
+      <a href={url} target="_blank" rel="noopener noreferrer" className="block">
+        <img
+          src={url}
+          alt={message.fileName || 'Image'}
+          loading="lazy"
+          onError={() => setBroken(true)}
+          className="max-h-72 w-auto max-w-full rounded-2xl object-cover"
+        />
+      </a>
+    );
+  }
+  if (message.type === 'audio') {
+    return <audio controls preload="none" src={url} className="h-10 w-60 max-w-full" />;
+  }
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex max-w-full items-center gap-2 rounded-2xl border border-line bg-surface-2 px-3 py-2 text-sm text-violet-300 hover:text-violet-200"
+    >
+      <span aria-hidden>📎</span>
+      <span className="truncate">{message.fileName || 'File'}</span>
+      {message.fileSize ? <span className="shrink-0 text-xs text-slate-500">{formatSize(message.fileSize)}</span> : null}
+    </a>
+  );
 }
 
-export default function MessageBubble({ message }: Props) {
+export default function MessageBubble({ message, showSender }: { message: Message; showSender: boolean }) {
   const { user } = useAuth();
-  const isMine = message.sender._id === user?._id;
-
-  function formatTime(date: string): string {
-    return new Date(date).toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  }
+  const mine = message.sender._id === user?._id;
 
   if (message.type === 'system') {
     return (
-      <div className="flex justify-center animate-slide-up">
-        <span className="text-xs text-slate-500 bg-surface-light px-3 py-1 rounded-full border border-surface-lighter">
-          {message.content}
-        </span>
-      </div>
+      <p className="mx-auto w-fit rounded-full border border-line bg-surface-2 px-3 py-1 text-xs text-slate-500">{message.content}</p>
     );
   }
 
   return (
-    <div className={`flex items-end gap-2 ${isMine ? 'justify-end' : 'justify-start'} animate-slide-up`}>
-      {!isMine && (
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-xs font-bold text-white shrink-0 shadow-md">
-          {message.sender.username[0].toUpperCase()}
-        </div>
-      )}
-      <div className="max-w-[70%]">
-        {!isMine && (
-          <p className="text-xs text-slate-400 mb-0.5 ml-1">
-            {message.sender.username}
-          </p>
-        )}
-
-        {/* File */}
-        {message.fileUrl && message.type !== 'audio' && (
-          <FilePreview
-            url={message.fileUrl}
-            type={message.type}
-            fileName={message.fileName}
-          />
-        )}
-
-        {/* Audio */}
-        {message.type === 'audio' && message.fileUrl && (
-          <AudioPlayer url={message.fileUrl} isMine={isMine} />
-        )}
-
-        {/* Text */}
+    <div className={`flex animate-slide-up items-end gap-2 ${mine ? 'justify-end' : ''}`}>
+      {!mine && <Avatar name={message.sender.username} src={message.sender.avatar} className="size-8 text-xs" />}
+      <div className={`flex max-w-[80%] min-w-0 flex-col gap-1 sm:max-w-[70%] ${mine ? 'items-end' : 'items-start'}`}>
+        {showSender && !mine && <span className="ml-1 text-xs text-slate-400">{message.sender.username}</span>}
+        {message.type !== 'text' && <Attachment message={message} />}
         {message.content && (
-          <div
-            className={`px-3 py-2 text-sm leading-relaxed ${
-              isMine ? 'message-bubble-mine text-white' : 'message-bubble-other text-slate-200'
+          <p
+            className={`max-w-full px-3.5 py-2 text-[15px] leading-relaxed break-words whitespace-pre-wrap ${
+              mine
+                ? 'rounded-2xl rounded-br-md bg-gradient-to-br from-violet-600 to-violet-700 text-white shadow-lg shadow-violet-600/20'
+                : 'rounded-2xl rounded-bl-md border border-line bg-surface-2 text-slate-100'
             }`}
           >
             {message.content}
-          </div>
+          </p>
         )}
-
-        <p
-          className={`text-xs text-slate-500 mt-0.5 ${
-            isMine ? 'text-right mr-1' : 'text-left ml-1'
-          }`}
-        >
+        <time dateTime={message.createdAt} className="px-1 text-[11px] text-slate-500">
           {formatTime(message.createdAt)}
-        </p>
+        </time>
       </div>
-    </div>
-  );
-}
-
-/* ─── Inline Audio Player ─────────────────────────────── */
-const BACKEND = import.meta.env.VITE_SOCKET_URL || '';
-
-function AudioPlayer({ url, isMine }: { url: string; isMine: boolean }) {
-  const fullUrl = url.startsWith('/') ? `${BACKEND}${url}` : url;
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const [playing, setPlaying] = useState(false);
-  const [error, setError] = useState(false);
-
-  function togglePlay() {
-    const audio = audioRef.current;
-    if (!audio) return;
-    setError(false);
-
-    if (audio.paused) {
-      audio.currentTime = 0;
-      audio.load();
-      audio.play()
-        .then(() => setPlaying(true))
-        .catch(() => {
-          setError(true);
-          setPlaying(false);
-        });
-    } else {
-      audio.pause();
-      setPlaying(false);
-    }
-  }
-
-  return (
-    <div
-      className={`flex items-center gap-3 px-3 py-2.5 mb-1 ${
-        isMine
-          ? 'bg-gradient-to-r from-violet-600 to-violet-700 rounded-2xl rounded-bl-md shadow-lg shadow-violet-500/25'
-          : 'bg-surface-light border border-surface-lighter rounded-2xl rounded-br-md'
-      }`}
-    >
-      <audio ref={audioRef} src={fullUrl} preload="auto" onEnded={() => setPlaying(false)} />
-
-      <button
-        onClick={togglePlay}
-        className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all ${
-          isMine
-            ? 'bg-white/20 hover:bg-white/30 text-white'
-            : 'bg-violet-500/20 hover:bg-violet-500/30 text-violet-400'
-        }`}
-      >
-        {error ? (
-          <span className="text-sm">⚠️</span>
-        ) : playing ? (
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-          </svg>
-        ) : (
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M8 5v14l11-7z" />
-          </svg>
-        )}
-      </button>
-
-      <div className={`audio-wave flex-1 ${playing ? 'playing' : 'paused'}`}>
-        {Array.from({ length: 12 }).map((_, i) => (
-          <div
-            key={i}
-            className="audio-wave-bar"
-            style={{ height: `${6 + Math.sin(i * 0.8) * 8}px`, background: isMine ? 'rgba(255,255,255,0.7)' : '#a78bfa' }}
-          />
-        ))}
-      </div>
-
-      <span className={`text-xs shrink-0 ${isMine ? 'text-white/70' : 'text-slate-400'}`}>
-        0:00
-      </span>
     </div>
   );
 }

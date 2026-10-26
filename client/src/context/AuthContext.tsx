@@ -1,70 +1,60 @@
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { authApi } from '../services/api';
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { authApi, tokenStore } from '../services/api';
 import { connectSocket, disconnectSocket } from '../services/socket';
-import { User } from '../types';
+import type { User } from '../types';
 
 interface AuthContextType {
   user: User | null;
-  token: string | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (username: string, email: string, password: string) => Promise<void>;
   logout: () => void;
+  updateUser: (user: Partial<User>) => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => tokenStore.get() !== null);
 
+  const signIn = useCallback((u: User, token: string) => {
+    tokenStore.set(token);
+    setUser(u);
+    connectSocket(token);
+  }, []);
+
+  // Restore the session from a stored token.
   useEffect(() => {
-    if (token) {
-      authApi
-        .me()
-        .then((res) => {
-          setUser(res.data.user);
-          connectSocket(token);
-        })
-        .catch(() => {
-          localStorage.removeItem('token');
-          setToken(null);
-        })
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
-  }, [token]);
+    const token = tokenStore.get();
+    if (!token) return;
+    authApi
+      .me()
+      .then(({ user }) => signIn(user, token))
+      .catch(() => tokenStore.clear())
+      .finally(() => setLoading(false));
+  }, [signIn]);
 
-  const login = useCallback(async (email: string, password: string) => {
-    const { data } = await authApi.login({ email, password });
-    localStorage.setItem('token', data.token);
-    setToken(data.token);
-    setUser(data.user);
-    connectSocket(data.token);
-  }, []);
+  const value: AuthContextType = {
+    user,
+    loading,
+    login: async (email, password) => {
+      const { user, token } = await authApi.login({ email, password });
+      signIn(user, token);
+    },
+    register: async (username, email, password) => {
+      const { user, token } = await authApi.register({ username, email, password });
+      signIn(user, token);
+    },
+    logout: () => {
+      tokenStore.clear();
+      setUser(null);
+      disconnectSocket();
+    },
+    updateUser: (patch) => setUser((u) => (u ? { ...u, ...patch } : u)),
+  };
 
-  const register = useCallback(async (username: string, email: string, password: string) => {
-    const { data } = await authApi.register({ username, email, password });
-    localStorage.setItem('token', data.token);
-    setToken(data.token);
-    setUser(data.user);
-    connectSocket(data.token);
-  }, []);
-
-  const logout = useCallback(() => {
-    localStorage.removeItem('token');
-    setToken(null);
-    setUser(null);
-    disconnectSocket();
-  }, []);
-
-  return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth(): AuthContextType {

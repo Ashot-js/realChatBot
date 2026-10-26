@@ -1,152 +1,112 @@
-import { useEffect, useRef } from 'react';
-import { useChatContext } from '../context/ChatContext';
+import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useChat } from '../context/ChatContext';
 import { useSocket } from '../context/SocketContext';
 import { useAuth } from '../context/AuthContext';
+import { chatTitle, otherParticipant } from '../utils/chat';
+import type { Chat } from '../types';
+import Avatar from './Avatar';
 import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
-import TypingIndicator from './TypingIndicator';
+import Spinner from './Spinner';
 
-export default function ChatWindow({ onOpenSidebar }: { onOpenSidebar: () => void }) {
-  const { activeChat, messages, messagesLoading, loadMoreMessages, typingUsers } = useChatContext();
-  const { socket } = useSocket();
+function typingText(names: string[]): string {
+  if (names.length === 1) return `${names[0]} is typing`;
+  if (names.length === 2) return `${names[0]} and ${names[1]} are typing`;
+  return `${names.length} people are typing`;
+}
+
+export default function ChatWindow({ chat }: { chat: Chat }) {
+  const { messages, messagesLoading, hasMore, loadMoreMessages, typing, openChat } = useChat();
+  const socket = useSocket();
   const { user } = useAuth();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const prevMessagesLen = useRef(0);
+  const scroller = useRef<HTMLDivElement>(null);
+  const scrollState = useRef({ height: 0, first: '', last: '', nearBottom: true });
 
-  // Auto-scroll to bottom on new messages
-  useEffect(() => {
-    if (messages.length > prevMessagesLen.current) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }
-    prevMessagesLen.current = messages.length;
-  }, [messages.length]);
+  const other = otherParticipant(chat, user);
+  const title = chatTitle(chat, user);
 
-  // Scroll to bottom on chat change
-  useEffect(() => {
-    if (activeChat) {
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView();
-      }, 100);
-    }
-  }, [activeChat?._id]);
-
-  // Mark messages as read
-  useEffect(() => {
-    if (activeChat && socket) {
-      socket.emit('messages:read', { chatId: activeChat._id });
-    }
-  }, [activeChat?._id, socket, messages.length]);
-
-  // Infinite scroll up
-  function handleScroll() {
-    const el = messagesContainerRef.current;
+  // Keep the view anchored: older messages loaded above keep the same message in view;
+  // a new message scrolls down only if the reader was already at the bottom.
+  useLayoutEffect(() => {
+    const el = scroller.current;
     if (!el) return;
-    if (el.scrollTop < 50 && !messagesLoading) {
-      loadMoreMessages();
+    const prev = scrollState.current;
+    const first = messages[0]?._id ?? '';
+    const last = messages.at(-1)?._id ?? '';
+    if (prev.first && first !== prev.first && last === prev.last) {
+      el.scrollTop += el.scrollHeight - prev.height;
+    } else if (last !== prev.last && (prev.nearBottom || !prev.last || messages.at(-1)?.sender._id === user?._id)) {
+      el.scrollTop = el.scrollHeight;
     }
+    scrollState.current = { ...prev, height: el.scrollHeight, first, last };
+  }, [messages, user?._id]);
+
+  useEffect(() => {
+    if (socket && messages.length) socket.emit('messages:read', { chatId: chat._id });
+  }, [socket, chat._id, messages.length]);
+
+  function handleScroll() {
+    const el = scroller.current!;
+    scrollState.current.nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    if (el.scrollTop < 60 && hasMore && !messagesLoading) loadMoreMessages();
   }
-
-  if (!activeChat) {
-    return (
-      <div className="flex-1 flex items-center justify-center chat-area relative">
-        <button
-          onClick={onOpenSidebar}
-          className="md:hidden absolute top-4 left-4 text-slate-300 hover:text-white p-2 z-10"
-          title="Open chats"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-        <div className="text-center">
-          <div className="text-6xl mb-5 drop-shadow-lg">💬</div>
-          <h2 className="text-xl font-semibold text-slate-100 mb-2">
-            Select a conversation
-          </h2>
-          <p className="text-slate-400 text-sm max-w-xs mx-auto">
-            Choose a chat from the sidebar or search for someone to start talking
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  const chatName = activeChat.isGroup
-    ? activeChat.name || 'Group'
-    : activeChat.participants.find((p) => p._id !== user?._id)?.username || 'Chat';
-
-  const otherParticipant = activeChat.isGroup
-    ? null
-    : activeChat.participants.find((p) => p._id !== user?._id);
 
   return (
-    <div className="flex-1 flex flex-col chat-area">
-      {/* Header */}
-      <div className="h-14 border-b border-surface-lighter flex items-center px-4 gap-3 shrink-0 glass-strong chat-header">
+    <section className="flex min-w-0 flex-1 flex-col">
+      <header className="flex shrink-0 items-center gap-3 border-b border-line bg-ink-900/80 px-3 py-2.5 pt-[max(0.625rem,env(safe-area-inset-top))] backdrop-blur-xl">
         <button
-          onClick={onOpenSidebar}
-          className="md:hidden text-slate-300 hover:text-white p-1 -ml-1"
-          title="Open chats"
+          onClick={() => openChat(null)}
+          className="flex size-10 items-center justify-center rounded-xl text-slate-300 hover:bg-white/5 md:hidden"
+          aria-label="Back to chats"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
+          <svg className="size-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
         </button>
-        <div className="relative">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-sm font-bold text-white shadow-lg">
-            {chatName[0].toUpperCase()}
-          </div>
-          {!activeChat.isGroup && otherParticipant && (
-            <span
-              className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-dark-900 ${
-                otherParticipant.isOnline
-                  ? 'bg-emerald-500 shadow-lg shadow-emerald-500/50'
-                  : 'bg-slate-500'
-              }`}
-            />
-          )}
-        </div>
-        <div>
-          <h3 className="text-sm font-semibold text-slate-100">{chatName}</h3>
-          <p className={`text-xs ${otherParticipant?.isOnline || activeChat.isGroup ? 'chat-status online' : 'chat-status'}`}>
-            {activeChat.isGroup
-              ? `${activeChat.participants.length} members`
-              : otherParticipant?.isOnline
-              ? 'Online'
-              : 'Offline'}
+        <Avatar name={title} src={other?.avatar} className="size-10 text-sm" online={other?.isOnline} />
+        <div className="min-w-0">
+          <h2 className="truncate text-sm font-semibold">{title}</h2>
+          <p className="truncate text-xs text-slate-400">
+            {typing.length > 0 ? (
+              <span className="text-violet-300">{typingText(typing)}…</span>
+            ) : chat.isGroup ? (
+              `${chat.participants.length} members`
+            ) : other?.isOnline ? (
+              <span className="text-emerald-400">Online</span>
+            ) : (
+              'Offline'
+            )}
           </p>
         </div>
+      </header>
 
-        {/* Typing indicator in header */}
-        {typingUsers.length > 0 && (
-          <div className="ml-auto">
-            <TypingIndicator usernames={typingUsers.map((u) => u.username)} />
-          </div>
-        )}
-      </div>
-
-      {/* Messages */}
       <div
-        ref={messagesContainerRef}
+        ref={scroller}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-4 py-4 space-y-2"
-      >
+        // Images grow the list after they load; stay pinned to the bottom if we were there.
+        onLoadCapture={() => {
+          if (scrollState.current.nearBottom) scroller.current!.scrollTop = scroller.current!.scrollHeight;
+        }}
+        className="flex-1 space-y-2 overflow-y-auto overscroll-contain px-3 py-4 sm:px-6">
         {messagesLoading && (
-          <div className="text-center py-3">
-            <div className="w-5 h-5 border-2 border-violet-500 border-t-transparent rounded-full animate-spin mx-auto" />
+          <div className="flex justify-center py-2">
+            <Spinner />
           </div>
         )}
-
-        {messages.map((msg) => (
-          <MessageBubble key={msg._id} message={msg} />
+        {!messagesLoading && messages.length === 0 && (
+          <p className="py-10 text-center text-sm text-slate-500">No messages yet — say hi 👋</p>
+        )}
+        {messages.map((msg, i) => (
+          <MessageBubble key={msg._id} message={msg} showSender={chat.isGroup && messages[i - 1]?.sender._id !== msg.sender._id} />
         ))}
-
-        <div ref={messagesEndRef} />
+        {typing.length > 0 && (
+          <div className="flex gap-1 px-2 py-1" aria-hidden>
+            {[0, 1, 2].map((i) => (
+              <span key={i} className="size-1.5 animate-typing rounded-full bg-violet-400" style={{ animationDelay: `${i * 0.15}s` }} />
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Input */}
-      <MessageInput />
-    </div>
+      <MessageInput chatId={chat._id} />
+    </section>
   );
 }
